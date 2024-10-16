@@ -2,8 +2,7 @@
     single linked list merge
     This problem requires you to merge two ordered singly linked lists into one ordered singly linked list
 */
-// I AM NOT DONE
-
+    
 use std::fmt::{self, Display, Formatter};
 use std::ptr::NonNull;
 use std::vec::*;
@@ -14,7 +13,7 @@ struct Node<T> {
     next: Option<NonNull<Node<T>>>,
 }
 
-impl<T> Node<T> {
+impl<T: Clone> Node<T> {
     fn new(t: T) -> Node<T> {
         Node { val: t, next: None }
     }
@@ -26,13 +25,13 @@ struct LinkedList<T> {
     end: Option<NonNull<Node<T>>>,
 }
 
-impl<T> Default for LinkedList<T> {
+impl<T: Clone + std::cmp::Ord + std::fmt::Display> Default for LinkedList<T> {
     fn default() -> Self {
         Self::new()
     }
 }
 
-impl<T> LinkedList<T> {
+impl<T: Clone + std::cmp::Ord + std::fmt::Display> LinkedList<T> {
     pub fn new() -> Self {
         Self {
             length: 0,
@@ -66,6 +65,7 @@ impl<T> LinkedList<T> {
             },
         }
     }
+
     pub fn merge(list_a: LinkedList<T>, list_b: LinkedList<T>) -> Self {
         let mut list = list_a;
 
@@ -83,6 +83,34 @@ impl<T> LinkedList<T> {
         }
 
         list.end = list_b.end;
+        let mut list_val = std::vec::Vec::<T>::new();
+        let mut node = list.start;
+        for _ in 0..list.length {
+            let node_ptr = match node {
+                None => {
+                    break;
+                },
+                Some(ptr) => ptr,
+            };
+            let val = unsafe { (*node_ptr.as_ptr()).val.clone() };
+            list_val.push(val);
+            node = unsafe { (*node_ptr.as_ptr()).next };
+            // println!("{}", unsafe { &(*node_ptr.as_ptr()).val });
+        }
+
+        node = list.start;
+        list_val.sort();
+        for i in list_val {
+            let node_ptr = match node {
+                None => {
+                    break;
+                },
+                Some(ptr) => ptr,
+            };
+            unsafe { (*node_ptr.as_ptr()).val = i.clone() }
+            node = unsafe { (*node_ptr.as_ptr()).next };
+            // println!("{}", i)
+        }
 
         list
     }
